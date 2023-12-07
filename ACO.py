@@ -1,20 +1,5 @@
 import random
-
 from bs4 import BeautifulSoup
-
-
-# Potentially have to move edges from Vertex into ACOGraph
-# Each Edge will have pheromone, this is active in both directions
-# Each edge will also have a cost, in this example the cost in both directions appears to be the same
-# This means we can create bi-directional edges using the XML input
-# Edges can therefore be stored as an object with 2 vertex numbers in a tuple or similar, e.g. Edge.location = (0, 1)
-# then this will have pheromone values and cost
-
-
-# We currently have Vertex objects in an array, but might not need this if we move edges into ACOGraph
-# Vertex can just be stored in ACOGraph as an array of numbers e.g. [0, 1, 2, 3, 4, 5]
-
-# Ants can store visited vertices as an array of numbers too
 
 
 class ACOGraph:
