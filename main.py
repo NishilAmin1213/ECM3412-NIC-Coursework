@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     metadata = get_metadata(path)
 
-    my_aco = ACO.ACOGraph(path, 100, 10, 0.5, 500)
+    my_aco = ACO1.ACOGraph(path, 50, 10, 0.5, 10000)
     my_aco.start_simulation()
-    print("DEBUG")`x
+    print("DEBUG")
     print(my_aco.best_solution.visited)
-    print(my_aco.calculate_ant_fitness(my_aco.best_solution))
+    print(my_aco.best_solution.fitness)
