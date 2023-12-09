@@ -1,6 +1,7 @@
 # pip install beautifulsoup4 lxml
 from bs4 import BeautifulSoup
-from ACO import *
+import ACO
+import ACO1
 
 
 def get_metadata(path):
@@ -24,4 +25,9 @@ if __name__ == "__main__":
     path = burma
 
     metadata = get_metadata(path)
-    my_aco = ACOGraph(path, 10, 10, 0.5, 10000)
+
+    my_aco = ACO.ACOGraph(path, 100, 10, 0.5, 500)
+    my_aco.start_simulation()
+    print("DEBUG")`x
+    print(my_aco.best_solution.visited)
+    print(my_aco.calculate_ant_fitness(my_aco.best_solution))
