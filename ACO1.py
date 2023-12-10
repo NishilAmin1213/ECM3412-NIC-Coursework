@@ -1,72 +1,135 @@
 import random
 from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
 
 
-class ACOGraph():
-    def __init__(self, path, no_ants, q, evap_rate, max_eval):
+class ACOGraph:
+    def __init__(self, path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic):
+        """
+        :param path: path to the XML file with data
+        :param no_ants: number of ants to use in each iteration of the simulation
+        :param q: the parameter 'q' which is used
+        :param alpha: the parameter 'alpha' which is used
+        :param beta: the parameter 'beta' which is used
+        :param evap_rate: the numerical value to control the rate at which pheromone evaporation occurs
+        :param max_eval: the maximum number of fitness evaluations to allow
+        :param heuristic: the string representation of the desired heuristic
+        """
+
+        # store passed in variables
         self.evap_rate = evap_rate
         self.max_eval = max_eval
         self.eval_counter = [0]
+        self.stats = []
         self.best_solution = 0
         self.no_ants = no_ants
 
         self.vertices = []
+        self.edges = []
         self.ants = []
         self.graph = []
-        self.generate_graph(path, q)
-        Edge.q = q
+        self.generate_graph(path)
+
+        # store passed in variables as class variables for Edge and Ant
+        Edge.heuristic = heuristic
+        Edge.alpha = alpha
+        Edge.beta = beta
+        self.q = Edge.q = q
+        Edge.edges = self.edges
+
         Ant.graph = self.graph
         Ant.eval_counter = self.eval_counter
 
-    def generate_graph(self, path, q):
+    def generate_graph(self, path):
+        """
+        method to define and fill a representation of the graph, in the form of a 2D array
+        :param path: path to the XML file with the data
+        :return: 2D array representation of the graph
+        """
         print("Generating Graph")
+        # Open the XML file
         with open(path, 'r') as xml_file:
+            # Read the XML file using bs4
             data = xml_file.read()
             bs4_data = BeautifulSoup(data, 'xml')
 
+            # find all vertex blocks in the XML filea and create a correctly sized 2D array with all values set to 0
             vertices = bs4_data.find_all('vertex')
-            self.graph = [[0 for i in range(len(vertices))] for j in range(len(vertices))]
+            for i in range(len(vertices)):
+                tmp = []
+                for j in range(len(vertices)):
+                    tmp.append(0)
+                self.graph.append(tmp)
 
-            for vertex_num in range(0, len(vertices)):
-                # store vertex numbers in self.vertices
+            # for each vertex in the XML file
+            for vertex_num in range(len(vertices)):
+                # store vertex number in self.vertices
                 self.vertices.append(vertex_num)
 
+                # iterate through each edge in the XML file for a specific vertex
                 for edge in list(filter("\n".__ne__, list(vertices[vertex_num].children))):
+                    # get the cost and location for the edge
                     cost = edge.get("cost")
                     location = {vertex_num, int(edge.get_text())}
-                    tmp_edge = Edge(int(float(cost)), q, location)
+                    # create an 'Edge' object
+                    tmp_edge = Edge(int(float(cost)), location)
 
+                    # if the edge has not been placed in the graph, place the edge in the graph
                     if self.graph[vertex_num][int(edge.get_text())] == 0:
+                        # place the edge in the graph, in both permutations of [row][col
+                        # the same instance of the edge object will be in both indexes
                         self.graph[vertex_num][int(edge.get_text())] = tmp_edge
                         self.graph[int(edge.get_text())][vertex_num] = tmp_edge
 
+                        # append the edge to the array of edges
+                        self.edges.append(tmp_edge)
+
     def generate_new_ants(self):
+        """
+        Method to generate the desired number of 'Ant' objects and clear all old ants
+        """
         print("Generating New Ants")
+        # Empty the self.ants array
         self.ants = []
+        # Fill the recently emptied array with new Ants, each placed at a random vertex
         for i in range(self.no_ants):
             self.ants.append(Ant(random.choice(self.vertices)))
 
+    def plot_stats(self):
+        """
+        Method to plot the statistics of the completed ACO simulation
+        """
+        # Create a scatter plot with one point for each entry in the stats array
+        plt.scatter([i for i in range(1, len(self.stats) + 1)], self.stats)
+        # set the labels and title
+        plt.xlabel("Iteration")
+        plt.ylabel("Average Fitness")
+        plt.title("no. ants = " + str(len(self.ants)) + ", q = " + str(Edge.q) + ", alpha = " + str(
+            Edge.alpha) + ", beta = " + str(Edge.beta) + ", evap rate = " + str(
+            self.evap_rate) + ",\nmax evals = " + str(
+            self.max_eval) + ", heuristic = " + Edge.heuristic + "Score: " + str(self.best_solution.fitness))
+        # plt.savefig("Performance Plot")
+        # output the plot
+        plt.show()
+
     def start_simulation(self):
+        """
+        method to simulate the ACO
+        """
         print("Starting Simulation")
 
+        # while loop to keep running simulation iterations until the maximum number of fitness evaluations is reached
         while self.eval_counter[0] < self.max_eval:
-            x = self.eval_counter[0]
-            x1 = Ant.eval_counter[0]
-            y = self.max_eval
-            '''
-            Generate initial ant population;
-            Calculate the fitness values for each ant of the colony;
-            Find optimal solution using selection methods;
-            Update pheromone concentration;
-            '''
 
             # generate new ants
             self.generate_new_ants()
 
             # move ants
+            total_fitness = 0
             for ant in self.ants:
                 ant.move()
-
+                total_fitness += ant.fitness
+                ant.update_pheromone_trail()
             # at this point, all ants have completed traversal
 
             # find best ant of this iteration
@@ -88,90 +151,162 @@ class ACOGraph():
                     if edge != 0:
                         edge.evaporate_pheromone()
 
+            # store average fitness of this iteraation into stats array
+            self.stats.append(total_fitness / len(self.ants))
+
 
 class Edge:
-    q = 0
-
-    def __init__(self, cost, q, location):
+    def __init__(self, cost, location):
+        """
+        :param cost: the cost associated to the edge
+        :param location: the location of the edge - this is a set containing the two vertices that the edge connects
+        """
         self.cost = cost
         self.pheromone = random.random()
         self.location = location
 
     def get_score(self):
-        return self.pheromone
+        """
+        this method uses the heuristic to return the score of an edge, this could be 1/d, q/d, or use the transition rule
+        :return: numerical value of the score
+        """
 
-    def get_cost(self):
-        return self.cost
+        if self.heuristic == '1/d':
+            return 1 / self.cost
+
+        if self.heuristic == 'q/d':
+            return self.q / self.cost
+
+        if self.heuristic == 'transition rule':
+            # apply the transition rule to return the score
+            total_cost = 0
+            total_pheromone = 0
+            for edge in self.edges:
+                total_cost += edge.cost
+                total_pheromone += edge.pheromone
+
+            return (((self.pheromone ** self.alpha) * ((1 / self.cost) ** self.beta)) /
+                    ((total_pheromone ** self.alpha) * ((1 / total_cost) ** self.beta)))
 
     def update_pheromone(self, ant_fitness):
-        self.pheromone += self.q/ant_fitness
+        """
+        Update the pheromone using the passed in fitness
+        :param ant_fitness: the fitness of the best ant in an iteration
+        """
+        # adds q/fitness to the pheromone of an edge
+        self.pheromone += self.q / ant_fitness
 
     def evaporate_pheromone(self):
+        """
+        Evaporate pheromone from an edge
+        """
+        # multiplied the edge's pheromone by q
         self.pheromone *= self.q
 
 
 class Ant:
-
     def __init__(self, vertex):
+        """
+        :param vertex: the vertex to place the ant initially
+        """
+        # set the start fitness of an ant to 0
         self.fitness = 0
+        # set the array of visited vertices to the initial vertex passed in
         self.visited = [vertex]
+        # set the current vertex to the initial vertex passed in
         self.current_vertex = vertex
 
     @classmethod
     def get_best_ant(cls, ants):
-        # check all ants until we find an ant with a better solution than the current best
+        """
+        Class method to return the best ant in a passed in array of ants
+        :param ants: array of ant objects
+        :return: the best ant that is found in the provided array
+        """
+        # set the best solution to the first element of the array
         best_ant = ants[0]
         best_fitness = ants[0].fitness
 
+        # compare this to the rest of the ants in the array
         for ant in ants:
             if ant.fitness <= best_fitness:
+                # if a ant with a better fitness is found, then make this ant the new best ant
                 best_fitness = ant.fitness
                 best_ant = ant
 
+        # return the best ant
         return best_ant
 
-
     def update_pheromone_trail(self):
+        """
+        follow the ants path and update the pheromone for every edge that it has travelled through
+        """
         for i in range(0, len(self.visited) - 1):
-            edge = Ant.graph[self.visited[i]][self.visited[i + 1]]
-            edge.update_pheromone(self.fitness)
+            # for each edge that the ant has travelled, update the pheromone using the ants fitness
+            Ant.graph[self.visited[i]][self.visited[i + 1]].update_pheromone(self.fitness)
+        # update the edge between the final node in the array and the first node
+        Ant.graph[self.visited[-1]][self.visited[0]].update_pheromone(self.fitness)
 
     def get_possible_moves(self):
+        """
+        return an array of the possible edge objects that the ant can travel taking the visited nodes into account
+        """
         possible_moves = []
 
         for row in range(0, len(Ant.graph)):
             for col in range(0, len(Ant.graph)):
-
-                # make sure the edge starts or ends from the current vertex
+                # for each row in the graph, make sure the edge starts or ends from the current vertex
                 if (row == self.current_vertex) or (col == self.current_vertex):
                     # make sure that one end of the edge has not been visited
                     if (row not in self.visited) or (col not in self.visited):
-                        # this is a valid edge
+                        # this is a valid edge, append it to the 'possible_moves' array
                         possible_moves.append(Ant.graph[row][col])
 
+        # return the array of possible moves
         return possible_moves
 
     def get_best_move(self, possible_moves):
-        # Determine the best move out of the array of possible moves passed in
+        """
+        get the best move from the array of possible moves
+        :param possible_moves: array of Edge objects, these are all the possible moves the ant can make
+        :return: an the best Edge object in this array
+        """
+
+        # set the best move to the first element of the possible moves array
         best_move = possible_moves[0]
         best_score = possible_moves[0].get_score()
 
+        # for the rest of the moves, if there is a better edge, set this to the new best move
         for edge in possible_moves:
             if edge.get_score() > best_score:
                 best_score = edge.get_score()
                 best_move = edge
 
+        # return the best move (an edge object)
         return best_move
 
     def set_fitness(self):
+        """
+        calculate the fitness of the ant and set the fitness attribute of the ant
+        """
+        # for each move made by the ant, get the cost and add it to the fitness
         for i in range(0, len(self.visited) - 1):
             edge = Ant.graph[self.visited[i]][self.visited[i + 1]]
-            self.fitness += edge.get_cost()
+            self.fitness += edge.cost
+        # add the cost between the final node and first node to the fitness
+        self.fitness += Ant.graph[self.visited[-1]][self.visited[0]].cost
+
+        # increment the 'eval_counter'
         Ant.eval_counter[0] += 1
 
     def move(self):
+        """
+        move the ant through the graph
+        """
+        # set flag to break the code out of the loop later on
         finished = False
 
+        # whilst the finished variable is not True
         while not finished:
 
             # get possible moves
@@ -181,9 +316,11 @@ class Ant:
             if len(possible_moves) == 0:
                 # Ant has finished, set its fitness
                 self.set_fitness()
-                x = Ant.eval_counter[0]
+                # set the finished variable to True to prevent this ant from trying to make another move
                 finished = True
-                print("ANT: " + str(self.visited) + " Score: " + str(self.fitness) + " Eval = " + str(Ant.eval_counter[0]))
+                # output the evaluation number and score of the ant
+                print("Eval = " + str(Ant.eval_counter[0]) + ", Score: " + str(self.fitness))
+                # skip the rest of this while loop
                 continue
 
             # get the best move out of the possible moves
