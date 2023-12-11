@@ -1,7 +1,7 @@
 import random
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
-
+from datetime import datetime
 
 class ACOGraph:
     def __init__(self, path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic):
@@ -17,7 +17,6 @@ class ACOGraph:
         """
 
         # store passed in variables
-        self.evap_rate = evap_rate
         self.max_eval = max_eval
         self.eval_counter = [0]
         self.stats = []
@@ -34,6 +33,7 @@ class ACOGraph:
         Edge.heuristic = heuristic
         Edge.alpha = alpha
         Edge.beta = beta
+        Edge.evap_rate = evap_rate
         self.q = Edge.q = q
         Edge.edges = self.edges
 
@@ -106,17 +106,17 @@ class ACOGraph:
         plt.ylabel("Average Fitness")
         plt.title("no. ants = " + str(len(self.ants)) + ", q = " + str(Edge.q) + ", alpha = " + str(
             Edge.alpha) + ", beta = " + str(Edge.beta) + ", evap rate = " + str(
-            self.evap_rate) + ",\nmax evals = " + str(
-            self.max_eval) + ", heuristic = " + Edge.heuristic + "Score: " + str(self.best_solution.fitness))
+            Edge.evap_rate) + ",\nmax evals = " + str(
+            self.max_eval) + ", heuristic = " + Edge.heuristic + ", best score: " + str(self.best_solution.fitness))
         # plt.savefig("Performance Plot")
         # output the plot
         plt.show()
 
-    def start_simulation(self):
+    def start_simulation(self, aco_method):
         """
         method to simulate the ACO
         """
-        print("Starting Simulation")
+        print("Starting Simulation - " + datetime.now().strftime("%H:%M:%S"))
 
         # while loop to keep running simulation iterations until the maximum number of fitness evaluations is reached
         while self.eval_counter[0] < self.max_eval:
@@ -129,21 +129,28 @@ class ACOGraph:
             for ant in self.ants:
                 ant.move()
                 total_fitness += ant.fitness
-                ant.update_pheromone_trail()
+                if aco_method == 'elitist':
+                    # update pheromone for all ants in the iteration
+                    ant.update_pheromone_trail()
+                print("Eval = " + str(Ant.eval_counter[0]) + ", Fitness: " + str(ant.fitness))
             # at this point, all ants have completed traversal
 
             # find best ant of this iteration
             best_ant = Ant.get_best_ant(self.ants)
 
-            # update pheromone for the best ant
-            best_ant.update_pheromone_trail()
-
             # update best solution of all time
             if self.best_solution == 0:
                 self.best_solution = best_ant
-
             if best_ant.fitness < self.best_solution.fitness:
                 self.best_solution = best_ant
+
+            if aco_method == 'original':
+                # update pheromone for the best ant of the iteration
+                best_ant.update_pheromone_trail()
+
+            if aco_method == 'elitist':
+                # update pheromone for the global best ant
+                self.best_solution.update_pheromone_trail()
 
             # evaporate pheromone in all edges
             for row in self.graph:
@@ -153,6 +160,7 @@ class ACOGraph:
 
             # store average fitness of this iteraation into stats array
             self.stats.append(total_fitness / len(self.ants))
+            #print("Iteration = " + str(len(self.stats)) + ", Avg Fitness: " + str(self.stats[-1]))
 
 
 class Edge:
@@ -200,8 +208,8 @@ class Edge:
         """
         Evaporate pheromone from an edge
         """
-        # multiplied the edge's pheromone by q
-        self.pheromone *= self.q
+        # multiplied the edge's pheromone by 1-evap rate
+        self.pheromone *= (1-self.evap_rate)
 
 
 class Ant:
@@ -318,8 +326,6 @@ class Ant:
                 self.set_fitness()
                 # set the finished variable to True to prevent this ant from trying to make another move
                 finished = True
-                # output the evaluation number and score of the ant
-                print("Eval = " + str(Ant.eval_counter[0]) + ", Score: " + str(self.fitness))
                 # skip the rest of this while loop
                 continue
 

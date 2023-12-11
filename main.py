@@ -1,7 +1,8 @@
 # pip install beautifulsoup4 lxml
 from bs4 import BeautifulSoup
-import ACO1
 import ACO
+import ACO1
+from datetime import datetime
 
 
 def get_metadata(path):
@@ -47,13 +48,14 @@ if __name__ == "__main__":
     # Create an ACOGraph object - this is what will be used to run the Ant Colony Optimisation
     # Parameters should be passed in here:
     # (path, no. ants, alpha, beta, evaporation rate, max no. of evaluations, heuristic string)
-    my_aco = ACO1.ACOGraph(path, 25, 0.5,1, 2, 0.5, 10000, heuristic)
+    my_aco = ACO1.ACOGraph(path, 100, 0.5, 1, 2, 0.5, 10000, heuristic)
 
     # call the 'start_simulation' method of the ACOGraph object to start the simulation
-    my_aco.start_simulation()
+    methods = ['original', 'elitist']
+    my_aco.start_simulation(methods[1])
 
     # Output the best solutions path, fitness and plot the simulations statistics
-    print("DEBUG")
-    print(my_aco.best_solution.visited)
-    print(my_aco.best_solution.fitness)
+    print("Simulation Complete - " + datetime.now().strftime("%H:%M:%S"))
+    print("best path - " + str(my_aco.best_solution.visited))
+    print("best fitness - " + str(my_aco.best_solution.fitness))
     my_aco.plot_stats()
