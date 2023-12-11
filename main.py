@@ -4,15 +4,17 @@ import matplotlib.pyplot as plt
 import ACO
 from datetime import datetime
 
-
-def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic):
-    # run an aco 5 times using the above parameters
+def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic, n):
+    # run an aco n times using the above parameters
     stats = []
-    n = 5
+    best_score = 99999
 
-    for i in range(0,n):
+    for i in range(0, n):
         trial = ACO.ACOGraph(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic)
-        stats.append(trial.start_simulation('elitist'))
+        output = trial.start_simulation('elitist')
+        stats.append(output[0])
+        if output[1] < best_score:
+            best_score = output[1]
 
     print(stats)
 
@@ -20,11 +22,11 @@ def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic):
         plt.plot(list(range(0, len(stats[i]))), stats[i], label='trial ' + str(i))
     plt.title("")
     plt.xlabel("Iterations")
-    plt.ylabel("Avg Fitness")
+    plt.ylabel("Global Best Fitness")
     plt.title("no. ants = " + str(no_ants) + ", q = " + str(q) + ", alpha = " + str(
         alpha) + ", beta = " + str(beta) + ", evap rate = " + str(
         evap_rate) + ",\nmax evals = " + str(
-        max_eval) + ", heuristic = " + heuristic)
+        max_eval) + ", heuristic = " + heuristic + ", best score = " + str(best_score))
     plt.legend()
     plt.show()
 
@@ -37,20 +39,7 @@ if __name__ == "__main__":
     # specify ACO methods here
     methods = ['original', 'elitist']
 
-    # Create an ACOGraph object - this is what will be used to run the Ant Colony Optimisation
     # Parameters should be passed in here:
-    # (paths[x], no. ants, alpha, beta, evaporation rate, max no. of evaluations, heuristics[x])
-
-    trial(paths[0], 100, 0.5, 1, 2, 0.5, 10000, heuristics[0])
-    quit()
-    my_aco = ACO.ACOGraph(paths[0], 100, 0.5, 1, 2, 0.5, 10000, heuristics[0])
-
-    # call the 'start_simulation' method of the ACOGraph object to start the simulation
-    my_aco.start_simulation(methods[1])
-
-    # Output the best solutions path, fitness and plot the simulations statistics
-    print("Simulation Complete - " + datetime.now().strftime("%H:%M:%S"))
-    print("best path - " + str(my_aco.best_solution.visited))
-    print("best fitness - " + str(my_aco.best_solution.fitness))
-    my_aco.plot_stats()
+    # (paths[x], no. ants, alpha, beta, evaporation rate, max no. of evaluations, heuristics[x], n)
+    trial(paths[1], 25, 0.5, 1, 2, 0.5, 10000, heuristics[0], 1)
 

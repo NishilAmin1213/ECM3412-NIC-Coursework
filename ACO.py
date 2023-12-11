@@ -88,7 +88,7 @@ class ACOGraph:
         """
         Method to generate the desired number of 'Ant' objects and clear all old ants
         """
-        print("Generating New Ants")
+        #print("Generating New Ants")
         # Empty the self.ants array
         self.ants = []
         # Fill the recently emptied array with new Ants, each placed at a random vertex
@@ -97,18 +97,18 @@ class ACOGraph:
 
     def plot_stats(self):
         """
-        Method to plot the statistics of the completed ACO simulation
+            Method to plot the statistics of the completed ACO simulation
         """
-        # Create a scatter plot with one point for each entry in the stats array
-        plt.scatter([i for i in range(1, len(self.stats) + 1)], self.stats)
+        # Create a line plot using the status array
+        plt.plot(list(range(0, len(self.stats))), self.stats, label='output')
         # set the labels and title
-        plt.xlabel("Iteration")
-        plt.ylabel("Average Fitness")
+        plt.xlabel("Iterations")
+        plt.ylabel("Global Best Fitness")
         plt.title("no. ants = " + str(len(self.ants)) + ", q = " + str(Edge.q) + ", alpha = " + str(
             Edge.alpha) + ", beta = " + str(Edge.beta) + ", evap rate = " + str(
             Edge.evap_rate) + ",\nmax evals = " + str(
             self.max_eval) + ", heuristic = " + Edge.heuristic + ", best score: " + str(self.best_solution.fitness))
-        # plt.savefig("Performance Plot")
+        plt.legend()
         # output the plot
         plt.show()
 
@@ -132,7 +132,7 @@ class ACOGraph:
                 if aco_method == 'elitist':
                     # update pheromone for all ants in the iteration
                     ant.update_pheromone_trail()
-                print("Eval = " + str(Ant.eval_counter[0]) + ", Fitness: " + str(ant.fitness))
+                #print("Eval = " + str(Ant.eval_counter[0]) + ", Fitness: " + str(ant.fitness))
             # at this point, all ants have completed traversal
 
             # find best ant of this iteration
@@ -159,10 +159,10 @@ class ACOGraph:
                         edge.evaporate_pheromone()
                         edge.set_score()
 
-            # store average fitness of this iteraation into stats array
-            self.stats.append(total_fitness / len(self.ants))
+            # store global best fitness of this iteraation into stats array
+            self.stats.append(self.best_solution.fitness)
 
-        return self.stats
+        return [self.stats, self.best_solution.fitness]
 
 
 class Edge:
@@ -183,10 +183,10 @@ class Edge:
         """
 
         if self.heuristic == '1/d':
-            return 1 / self.cost
+            return 1/self.cost
 
         if self.heuristic == 'q/d':
-            return self.q / self.cost
+            return self.q/self.cost
 
         if self.heuristic == 'transition rule':
             # apply the transition rule to return the score
