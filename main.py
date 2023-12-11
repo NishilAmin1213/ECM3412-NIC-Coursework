@@ -1,57 +1,51 @@
-# pip install beautifulsoup4 lxml
-from bs4 import BeautifulSoup
+# pip install beautifulsoup4 lxml matplotlib
+import matplotlib.pyplot as plt
+
 import ACO
-import ACO1
 from datetime import datetime
 
 
-def get_metadata(path):
-    """
-    Retrieves metadata from the XML file
-    :param path: path to the XML file
-    :return: dictionary containing metadata of the XML File
-    """
-    res = {}
-    headers = ['name', 'source', 'description', 'doublePrecision', 'ignoredDigits']
+def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic):
+    # run an aco 5 times using the above parameters
+    stats = []
+    n = 5
 
-    # Open the XML file at the given path
-    with open(path, 'r') as xml_file:
-        # Read the XML file using bs4
-        data = xml_file.read()
-        bs4_data = BeautifulSoup(data, 'xml')
+    for i in range(0,n):
+        trial = ACO.ACOGraph(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic)
+        stats.append(trial.start_simulation('elitist'))
 
-        # For each of the hard coded parameters, get the value from the XML and store it in the dictionary
-        for header in headers:
-            value = bs4_data.find(header).get_text()
-            res[header] = value
+    print(stats)
 
-    # return the dictionary
-    return res
+    for i in range(len(stats)):
+        plt.plot(list(range(0, len(stats[i]))), stats[i], label='trial ' + str(i))
+    plt.title("")
+    plt.xlabel("Iterations")
+    plt.ylabel("Avg Fitness")
+    plt.title("no. ants = " + str(no_ants) + ", q = " + str(q) + ", alpha = " + str(
+        alpha) + ", beta = " + str(beta) + ", evap rate = " + str(
+        evap_rate) + ",\nmax evals = " + str(
+        max_eval) + ", heuristic = " + heuristic)
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
     # specify the two paths here
-    brazil = './data/brazil58.xml'
-    burma = './data/burma14.xml'
-    # select the path to operate on
-    path = burma
-
-    # get the metadata for the XML file
-    metadata = get_metadata(path)
-
-    # define heuristics options
+    paths = ['./data/burma14.xml', './data/brazil58.xml']
+    # specify heuristic options here
     heuristics = ['transition rule', '1/d', 'q/d']
-    # select a heuristic from the above options
-    heuristic = heuristics[0]
+    # specify ACO methods here
+    methods = ['original', 'elitist']
 
-    # higher q rewards worse answers, lower q rewards good answers faster
     # Create an ACOGraph object - this is what will be used to run the Ant Colony Optimisation
     # Parameters should be passed in here:
-    # (path, no. ants, alpha, beta, evaporation rate, max no. of evaluations, heuristic string)
-    my_aco = ACO1.ACOGraph(path, 100, 0.5, 1, 2, 0.5, 10000, heuristic)
+    # (paths[x], no. ants, alpha, beta, evaporation rate, max no. of evaluations, heuristics[x])
+
+    trial(paths[0], 100, 0.5, 1, 2, 0.5, 10000, heuristics[0])
+    quit()
+    my_aco = ACO.ACOGraph(paths[0], 100, 0.5, 1, 2, 0.5, 10000, heuristics[0])
 
     # call the 'start_simulation' method of the ACOGraph object to start the simulation
-    methods = ['original', 'elitist']
     my_aco.start_simulation(methods[1])
 
     # Output the best solutions path, fitness and plot the simulations statistics
@@ -59,3 +53,4 @@ if __name__ == "__main__":
     print("best path - " + str(my_aco.best_solution.visited))
     print("best fitness - " + str(my_aco.best_solution.fitness))
     my_aco.plot_stats()
+
