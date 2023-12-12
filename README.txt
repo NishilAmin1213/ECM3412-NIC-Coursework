@@ -5,7 +5,6 @@ The XML files should be scored in a folder named 'data' at the same level as the
 this should be such that from main.py, the following paths are valid: './data/brazil58.xml', './data/burma14.xml'
 these have been provided in this zip
 
-
 In order to run a simulation, the main.py file must be executed.
 
 Within this the 'trial' function is used to run a simulation 'n' times.
@@ -25,3 +24,6 @@ overwrite the previous image.
 For parameters such as the path, heuristic and method, please refer to the arrays in main.py,
 select the index of the desired option from the array, these are used when calling the trial function.
 
+For reference, this program was created in pycharm, and therefore if you have trouble running the code, I recommend
+creating a pycharm project, placing the contents of the zip (main.py, ACO.py and the 'data' folder) in the project folder
+then running the main.py file in the top left corner. (Python version 3.9 was used during development and testing)
