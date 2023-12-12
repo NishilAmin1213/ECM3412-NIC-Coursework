@@ -3,9 +3,10 @@ this can be done by using 'pip install beautifulsoup4 lxml matplotlib'
 
 The XML files should be scored in a folder named 'data' at the same level as the main.py file
 this should be such that from main.py, the following paths are valid: './data/brazil58.xml', './data/burma14.xml'
+these have been provided in this zip
+
 
 In order to run a simulation, the main.py file must be executed.
-
 
 Within this the 'trial' function is used to run a simulation 'n' times.
 Below highlights the parameters that trial takes
