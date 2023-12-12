@@ -129,10 +129,8 @@ class ACOGraph:
             for ant in self.ants:
                 ant.move()
                 total_fitness += ant.fitness
-                if aco_method == 'elitist':
-                    # update pheromone for all ants in the iteration
-                    ant.update_pheromone_trail()
-                #print("Eval = " + str(Ant.eval_counter[0]) + ", Fitness: " + str(ant.fitness))
+                # update pheromone for all ants in the iteration (elitist ACO)
+                ant.update_pheromone_trail()
             # at this point, all ants have completed traversal
 
             # find best ant of this iteration
@@ -144,13 +142,8 @@ class ACOGraph:
             if best_ant.fitness < self.best_solution.fitness:
                 self.best_solution = best_ant
 
-            if aco_method == 'original':
-                # update pheromone for the best ant of the iteration
-                best_ant.update_pheromone_trail()
-
-            if aco_method == 'elitist':
-                # update pheromone for the global best ant
-                self.best_solution.update_pheromone_trail()
+            # update pheromone for the global best ant (elitist ACO)
+            self.best_solution.update_pheromone_trail()
 
             # evaporate pheromone in all edges
             for row in self.graph:
@@ -183,6 +176,7 @@ class Edge:
         """
 
         if self.heuristic == '1/d':
+            return 1/self.cost
             return 1/self.cost
 
         if self.heuristic == 'q/d':

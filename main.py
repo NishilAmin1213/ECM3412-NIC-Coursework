@@ -1,13 +1,12 @@
 # pip install beautifulsoup4 lxml matplotlib
 import matplotlib.pyplot as plt
-
 import ACO
-from datetime import datetime
+
 
 def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic, n):
     # run an aco n times using the above parameters
     stats = []
-    best_score = 99999
+    best_score = 9999999
 
     for i in range(0, n):
         trial = ACO.ACOGraph(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic)
@@ -16,8 +15,7 @@ def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic, n):
         if output[1] < best_score:
             best_score = output[1]
 
-    print(stats)
-
+    print("Plotting Graph")
     for i in range(len(stats)):
         plt.plot(list(range(0, len(stats[i]))), stats[i], label='trial ' + str(i))
     plt.title("")
@@ -32,14 +30,10 @@ def trial(path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic, n):
 
 
 if __name__ == "__main__":
-    # specify the two paths here
+    # selectable options below
     paths = ['./data/burma14.xml', './data/brazil58.xml']
-    # specify heuristic options here
     heuristics = ['transition rule', '1/d', 'q/d']
-    # specify ACO methods here
-    methods = ['original', 'elitist']
 
     # Parameters should be passed in here:
     # (paths[x], no. ants, alpha, beta, evaporation rate, max no. of evaluations, heuristics[x], n)
-    trial(paths[1], 25, 0.5, 1, 2, 0.5, 10000, heuristics[0], 1)
-
+    trial(paths[0], 50, 0.5, 1, 2, 0.51, 10000, heuristics[0], 5)
