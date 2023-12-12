@@ -95,24 +95,7 @@ class ACOGraph:
         for i in range(self.no_ants):
             self.ants.append(Ant(random.choice(self.vertices)))
 
-    def plot_stats(self):
-        """
-            Method to plot the statistics of the completed ACO simulation
-        """
-        # Create a line plot using the status array
-        plt.plot(list(range(0, len(self.stats))), self.stats, label='output')
-        # set the labels and title
-        plt.xlabel("Iterations")
-        plt.ylabel("Global Best Fitness")
-        plt.title("no. ants = " + str(len(self.ants)) + ", q = " + str(Edge.q) + ", alpha = " + str(
-            Edge.alpha) + ", beta = " + str(Edge.beta) + ", evap rate = " + str(
-            Edge.evap_rate) + ",\nmax evals = " + str(
-            self.max_eval) + ", heuristic = " + Edge.heuristic + ", best score: " + str(self.best_solution.fitness))
-        plt.legend()
-        # output the plot
-        plt.show()
-
-    def start_simulation(self, aco_method):
+    def start_simulation(self):
         """
         method to simulate the ACO
         """

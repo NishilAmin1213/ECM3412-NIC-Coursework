@@ -18,7 +18,8 @@ It will run an ACO on burma with a transition rule heuristic, 100 ants, 0.5 for 
     trial(paths[0], 100, 0.5, 1, 2, 0.51, 10000, heuristics[0], 5)
 '''
 
-By default the code will run the above trial.
+By default the code will run the above trial. The plot will be stored as 'ECM3412-NIC-Output' and each run will
+overwrite the previous image.
 
 For parameters such as the path, heuristic and method, please refer to the arrays in main.py,
 select the index of the desired option from the array, these are used when calling the trial function.
