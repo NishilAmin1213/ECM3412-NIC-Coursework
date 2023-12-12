@@ -1,7 +1,7 @@
-import random
-from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
+from bs4 import BeautifulSoup
 from datetime import datetime
+import random
 
 class ACOGraph:
     def __init__(self, path, no_ants, q, alpha, beta, evap_rate, max_eval, heuristic):

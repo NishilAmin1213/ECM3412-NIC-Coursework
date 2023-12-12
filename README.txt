@@ -10,7 +10,7 @@ In order to run a simulation, the main.py file must be executed.
 Within this the 'trial' function is used to run a simulation 'n' times.
 Below highlights the parameters that trial takes
 '''
-    tiral(path, no. ants, q, alpha, beta, max_evals, heuristic, number of trials)
+    trial(path, no. ants, q, alpha, beta, max_evals, heuristic, number of trials)
 '''
 The below code runs trial function, however it will run it '5' times as specified in the final parameter.
 It will run an ACO on burma with a transition rule heuristic, 100 ants, 0.5 for q, 0.51 for e, and
