@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
-from datetime import dgatetime
+from datetime import datetime
 import random
 
 class ACOGraph:
